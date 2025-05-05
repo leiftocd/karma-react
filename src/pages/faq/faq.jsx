@@ -32,7 +32,7 @@ function FAQ() {
           answer: "Real-world donations are transparent, measurable, and verifiable. Tying every token to a documented act of giving anchors the project in genuine goodwill and removes any “pay-to-mint” dynamic."
         },
         {
-          question: "How areFerrari donation events sourced?",
+          question: "How are donation events sourced?",
           answer: "Karma.Today identifies donation events worldwide, and community members can also nominate events. Once an event is added to the candidate list, Karma.Today researches the appropriate proof methods to fully verify it.",
           button: 'Click to see',
           diagram: "diag1.png"
