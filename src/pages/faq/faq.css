@@ -24,7 +24,7 @@ body {
     padding-top: 0 !important;
     z-index: 100000 !important;
     overflow: hidden;
-    background-image: url('../../../public/faq/bg.png');
+    background-image: url('../../../public/images/faq/bg.png');
     background-repeat: no-repeat;
     background-size: auto;
     background-position: center;

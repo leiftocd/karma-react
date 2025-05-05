@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import logo from '../../../public/logo.png';
-import Sun from '../../../public/Sun.png';
-import SunMb from '../../../public/mb/Sun.png';
-import mountain from '../../../public/mountain.png';
-import mountainMb from '../../../public/mb/mountain.png';
-import bg from '../../../public/background.png';
+import logo from '../../../public/images/logo.png';
+import Sun from '../../../public/images/Sun.png';
+import SunMb from '../../../public/images/mb/Sun.png';
+import mountain from '../../../public/images/mountain.png';
+import mountainMb from '../../../public/images/mb/mountain.png';
+import bg from '../../../public/images/background.png';
 import './home.css';
 import { Link } from 'react-router-dom';
 

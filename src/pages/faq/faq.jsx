@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import logo from '../../../public/logo.png';
+import logo from '../../../public/images/logo.png';
 import './faq.css';
 
 function FAQ() {
@@ -439,7 +439,7 @@ function FAQ() {
                           <div className="answer-text" dangerouslySetInnerHTML={{ __html: item.answer }} />
                           <div className="diagram-container" style={{ display: 'block' }}>
                             <img 
-                              src={`../../../public/faq/${item.diagram}`} 
+                              src={`../../../public/images/faq/${item.diagram}`} 
                               alt={`${item.question} diagram`} 
                               className="diagram-image" 
                             />
@@ -510,7 +510,7 @@ function FAQ() {
               <div className="question-display">{fullscreenDiagram.question}</div>
               <div className="diagram-display">
                 <img 
-                  src={`../../../public/faq/${fullscreenDiagram.diagram}`} 
+                  src={`../../../public/images/faq/${fullscreenDiagram.diagram}`} 
                   alt="Diagram" 
                   className="fullscreen-image" 
                 />
