@@ -14,6 +14,13 @@ function FAQ() {
   const scrollPositionRef = useRef(0);
   // Store the active section when opening fullscreen diagram
   const activeSectionRef = useRef(1);
+  //img url
+  const diagramImages = {
+    'diag1.png': new URL('../../../public/images/faq/diag1.png', import.meta.url).href,
+    'diag2.png': new URL('../../../public/images/faq/diag2.png', import.meta.url).href,
+    'diag3.png': new URL('../../../public/images/faq/diag3.png', import.meta.url).href,
+  };
+  //
   const faqData = [
     {
       title: "Event Sourcing & Preparation",
@@ -439,7 +446,7 @@ function FAQ() {
                           <div className="answer-text" dangerouslySetInnerHTML={{ __html: item.answer }} />
                           <div className="diagram-container" style={{ display: 'block' }}>
                             <img 
-                              src={`../../../public/images/faq/${item.diagram}`} 
+                              src={diagramImages[item.diagram]} 
                               alt={`${item.question} diagram`} 
                               className="diagram-image" 
                             />
@@ -510,7 +517,7 @@ function FAQ() {
               <div className="question-display">{fullscreenDiagram.question}</div>
               <div className="diagram-display">
                 <img 
-                  src={`../../../public/images/faq/${fullscreenDiagram.diagram}`} 
+                  src={diagramImages[fullscreenDiagram.diagram]} 
                   alt="Diagram" 
                   className="fullscreen-image" 
                 />
