@@ -544,7 +544,7 @@ body {
     }
     .fullscreen-content {
         max-width: 70% !important;
-        inset:  100px 0 0 0 !important;
+        inset:  52px 0 0 0 !important;
     }
     #header {
         padding: 0 32px !important;
@@ -610,7 +610,7 @@ body {
         padding: 12px 20px;
     }
     .fullscreen-content {
-        inset: 100px 0 0 0 !important;
+        inset: 30px 0 0 0 !important;
     }
     .close-fullscreen-btn{
         font-size: 14px;
@@ -860,9 +860,6 @@ body {
     .fullscreen-overlay {
         z-index: 10000 !important;
         background-color: rgba(0, 0, 0, 0.1);
-    }
-    .fullscreen-content{
-        position: unset  !important;
     }
     .fullscreen-diagram{
         z-index: 10001;
