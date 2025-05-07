@@ -7,7 +7,7 @@ function homeContentEng({className, id}) {
             <p>
                 The concept of Karma originates from the law of cause and
                 effect, emphasizing that
-                <strong>good deeds bring positive outcomes</strong>, while bad
+                <strong> good deeds bring positive outcomes</strong>, while bad
                 actions may lead to negative consequences. This idea first
                 emerged in Indian philosophy, which holds that a person&apos;s
                 behavior not only impacts the present but may also shape the
