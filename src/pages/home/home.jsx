@@ -15,13 +15,13 @@ import HomeContentCn from './homeContentCn/homeContentCn';
 function Home() {
   const [selectedLang, setSelectedLang] = useState('en');
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 641);
   const svgRef = useRef(null);
   const intervalRef = useRef(null);
   const timerRef = useRef(null);
   const [processData, setProcessData] = useState(null);
   const [mintEvents, setMintEvents] = useState([]);
-  const [popup, setPopup] = useState({
+  const [pinpointPopup, setPinpointPopup] = useState({
     show: false,
     data: null,
     x: 0,
@@ -71,7 +71,6 @@ function Home() {
       textElement.setAttribute('dominant-baseline', 'middle');
       textElement.setAttribute('class', 'hover-text');
       textElement.setAttribute('opacity', '0'); // Make textElement transparent
-      textElement.style.cursor = 'pointer';
 
       // Create an HTML overlay box
       let boxDiv = document.createElement('div');
@@ -84,9 +83,23 @@ function Home() {
       boxDiv.style.fontSize = '22px';
       boxDiv.style.fontFamily = 'arial';
       boxDiv.style.textAlign = 'center';
-      boxDiv.style.cursor = 'pointer';
       boxDiv.style.zIndex = '10000'; // Ensure it appears above SVG
       document.getElementById('container').appendChild(boxDiv);
+
+      // Create pinpoint div
+      let pinpointDiv = document.createElement('div');
+      pinpointDiv.className = 'pin-point';
+      pinpointDiv.style.position = 'absolute';
+      pinpointDiv.style.width = '12px';
+      pinpointDiv.style.height = '12px';
+      pinpointDiv.style.borderRadius = '50%';
+      pinpointDiv.style.backgroundColor = 'white';
+      pinpointDiv.style.border = '2px solid white';
+      pinpointDiv.style.boxShadow = '0 0 5px rgba(255, 255, 255, 0.7)';
+      pinpointDiv.style.transform = 'translate(-50%, -50%)';
+      pinpointDiv.style.cursor = 'pointer';
+      pinpointDiv.style.zIndex = '10001'; // Above SVG and text-box
+      document.getElementById('container').appendChild(pinpointDiv);
 
       // Update the position and content of the overlay box
       const updateBoxPosition = (text, textElement) => {
@@ -112,7 +125,7 @@ function Home() {
         let screenY = screenPoint.y - containerRect.top;
 
         // Adjust positioning based on screen width
-        if (windowWidth <= 640) {
+        if (windowWidth <= 641) {
           // Ensure the textbox stays within the container
           if (screenX + textBbox.width + 16 > containerRect.width) {
             screenX = containerRect.width - (textBbox.width + 16) - 10;
@@ -146,95 +159,136 @@ function Home() {
         boxDiv.textContent = text;
       };
 
-      // Add hover event listeners to the overlay box
-      const updateBoxEvents = (eventData) => {
+      // Update the position of the pinpoint
+      const updatePinpointPosition = (pathBbox) => {
+        const containerRect = document.getElementById('container').getBoundingClientRect();
+        const point = svg.createSVGPoint();
+        point.x = pathBbox.x; // Left edge of the first path
+        point.y = pathBbox.y + pathBbox.height / 2; // Vertical center
+
+        const ctm = svg.getScreenCTM();
+        if (!ctm) {
+          console.error('Could not get SVG CTM for pinpoint');
+          return;
+        }
+        const screenPoint = point.matrixTransform(ctm);
+
+        let screenX = screenPoint.x - containerRect.left;
+        let screenY = screenPoint.y - containerRect.top;
+
+        pinpointDiv.style.left = `${screenX}px`;
+        pinpointDiv.style.top = `${screenY}px`;
+      };
+
+      // Add hover event listeners for the pinpoint
+      const updateBoxEvents = () => {
         // Remove existing listeners to prevent duplicates
         const newBoxDiv = boxDiv.cloneNode(true);
         boxDiv.parentNode.replaceChild(newBoxDiv, boxDiv);
         boxDiv = newBoxDiv;
 
-        let hideTimeout = null;
-        let isHovering = false;
+        // Pinpoint hover events
+        const newPinpointDiv = pinpointDiv.cloneNode(true);
+        pinpointDiv.parentNode.replaceChild(newPinpointDiv, pinpointDiv);
+        pinpointDiv = newPinpointDiv;
 
-        const showPopup = () => {
-          if (isHovering) return; // Prevent multiple triggers
-          isHovering = true;
+        let pinpointHideTimeout = null;
+        let isPinpointHovering = false;
 
-          const boxRect = boxDiv.getBoundingClientRect();
+        const showPinpointPopup = () => {
+          if (isPinpointHovering) return;
+          isPinpointHovering = true;
+
+          const pinpointRect = pinpointDiv.getBoundingClientRect();
           const containerRect = document.getElementById('container').getBoundingClientRect();
+          const windowWidth = window.innerWidth;
 
           // Render popup offscreen to measure size
-          setPopup({
+          setPinpointPopup({
             show: true,
-            data: eventData,
+            data: mintEvents[0] || null,
             x: -9999,
             y: -9999,
           });
 
-          // Wait for popup to render and get its size
           setTimeout(() => {
-            const popupElement = document.querySelector('.transaction-popup');
+            const popupElement = document.querySelector('.pinpoint-popup');
             if (!popupElement) {
-              isHovering = false;
+              isPinpointHovering = false;
               return;
             }
             const popupRect = popupElement.getBoundingClientRect();
 
-            // Set final position based on screen width and progress data
-            let popupX;
-            if (window.innerWidth <= 990 && processData >= 25 && processData <= 70) {
-              // Position popup to the left of the box (right edge aligns with box's left)
-              popupX = boxRect.left - containerRect.left - popupRect.width;
+            // Position popup based on screen width
+            let popupX, popupY;
+            if (windowWidth <= 768) {
+              // For screens <= 768px, position to the right with left at 90% of pinpoint
+              popupX = pinpointRect.right - containerRect.left + (pinpointRect.width * 0.9);
+              popupY = pinpointRect.top - containerRect.top - popupRect.height + 5;
             } else {
-              // Position popup to the right of the box (default for desktop and outside 25-70% range)
-              popupX = boxRect.right - containerRect.left;
+              // For screens > 768px, position above, centered on pinpoint
+              popupX = pinpointRect.left - containerRect.left - (popupRect.width / 2) + (pinpointRect.width / 2);
+              popupY = pinpointRect.top - containerRect.top - popupRect.height + 5;
             }
 
-            setPopup({
+            // Ensure popup stays within container
+            const containerWidth = containerRect.width;
+            if (popupX + popupRect.width > containerWidth) {
+              popupX = containerWidth - popupRect.width - 10;
+            }
+            if (popupX < 0) {
+              popupX = 10;
+            }
+
+            setPinpointPopup({
               show: true,
-              data: eventData,
+              data: mintEvents[0] || null,
               x: popupX,
-              y: boxRect.bottom - containerRect.top - popupRect.height,
+              y: popupY,
             });
 
-            // Add event listeners to the popup
             popupElement.addEventListener('mouseenter', () => {
-              clearTimeout(hideTimeout);
-              setPopup((prev) => ({ ...prev, show: true }));
+              clearTimeout(pinpointHideTimeout);
+              setPinpointPopup((prev) => ({ ...prev, show: true }));
             });
 
             popupElement.addEventListener('mouseleave', (e) => {
               const relatedTarget = e.relatedTarget;
-              if (relatedTarget !== boxDiv && !boxDiv.contains(relatedTarget)) {
-                hideTimeout = setTimeout(() => {
-                  setPopup((prev) => ({ ...prev, show: false }));
-                  isHovering = false;
+              if (relatedTarget !== pinpointDiv && !pinpointDiv.contains(relatedTarget)) {
+                pinpointHideTimeout = setTimeout(() => {
+                  setPinpointPopup((prev) => ({ ...prev, show: false }));
+                  isPinpointHovering = false;
                 }, 100);
               }
             });
           }, 0);
         };
 
-        boxDiv.addEventListener('mouseenter', () => {
-          clearTimeout(hideTimeout);
-          showPopup();
+        pinpointDiv.addEventListener('mouseenter', () => {
+          clearTimeout(pinpointHideTimeout);
+          showPinpointPopup();
         });
 
-        boxDiv.addEventListener('mouseleave', (e) => {
+        pinpointDiv.addEventListener('mouseleave', (e) => {
           const relatedTarget = e.relatedTarget;
-          const popupElement = document.querySelector('.transaction-popup');
+          const popupElement = document.querySelector('.pinpoint-popup');
           if (relatedTarget !== popupElement && !popupElement?.contains(relatedTarget)) {
-            hideTimeout = setTimeout(() => {
-              setPopup((prev) => ({ ...prev, show: false }));
-              isHovering = false;
+            pinpointHideTimeout = setTimeout(() => {
+              setPinpointPopup((prev) => ({ ...prev, show: false }));
+              isPinpointHovering = false;
             }, 100);
           }
+        });
+
+        // Text box hover to hide pinpoint popup
+        boxDiv.addEventListener('mouseenter', () => {
+          setPinpointPopup((prev) => ({ ...prev, show: false }));
         });
       };
 
       svg.appendChild(textElement);
 
-      // Handle invalid data case
+      // Handle invalid data case and set pinpoint
       if (!validateData(data)) {
         const pathData = Array.from(paths).map((path, index) => {
           const bbox = path.getBBox();
@@ -255,16 +309,17 @@ function Home() {
         }
 
         const firstPathBbox = sortedPathData[0].bbox;
-        const midX = firstPathBbox.x + firstPathBbox.width / 2 - 15;  
+        const midX = firstPathBbox.x + firstPathBbox.width / 2 - 15;
         const midY = firstPathBbox.y - 20;
         textElement.setAttribute('x', midX);
         textElement.setAttribute('y', midY);
         textElement.textContent = '0%';
 
         updateBoxPosition('0%', textElement);
+        updatePinpointPosition(firstPathBbox); // Set pinpoint position
 
         if (mintEvents.length > 0) {
-          updateBoxEvents(mintEvents[0]);
+          updateBoxEvents();
         }
 
         return;
@@ -299,6 +354,9 @@ function Home() {
       } else {
         sortedPathData.sort((a, b) => a.index - b.index);
       }
+
+      // Set pinpoint position at first path
+      updatePinpointPosition(sortedPathData[0].bbox);
 
       // Create new paths for animation
       const newPaths = [];
@@ -443,8 +501,7 @@ function Home() {
 
           // Update event listeners
           if (mintEvents.length > 0) {
-            const eventIndex = currentIndex % mintEvents.length;
-            updateBoxEvents(mintEvents[eventIndex]);
+            updateBoxEvents();
           }
         } else {
           // Finalize text position when animation completes
@@ -476,8 +533,7 @@ function Home() {
 
           // Update event listeners
           if (mintEvents.length > 0) {
-            const eventIndex = currentIndex % mintEvents.length;
-            updateBoxEvents(mintEvents[eventIndex]);
+            updateBoxEvents();
           }
           clearInterval(intervalRef.current);
         }
@@ -486,7 +542,7 @@ function Home() {
 
     // Handle window resize events
     const handleResize = () => {
-      const newIsMobile = window.innerWidth < 640;
+      const newIsMobile = window.innerWidth < 641;
       if (newIsMobile !== isMobile) {
         setIsMobile(newIsMobile);
         window.location.reload();
@@ -549,29 +605,32 @@ function Home() {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (intervalRef.current) clearInterval(intervalRef.current);
       window.removeEventListener('resize', handleResize);
-      // Remove the overlay box
+      // Remove the overlay box and pinpoint
       const boxDiv = document.querySelector('.text-box');
       if (boxDiv) boxDiv.remove();
+      const pinpointDiv = document.querySelector('.pin-point');
+      if (pinpointDiv) pinpointDiv.remove();
     };
   }, [processData, isMobile, mintEvents.length]);
 
-  // Render the transaction popup
-  const renderPopup = () => {
-    if (!popup.show || !popup.data) return null;
+  // Render the pinpoint popup
+  const renderPinpointPopup = () => {
+    if (!pinpointPopup.show || !pinpointPopup.data) return null;
     return (
       <div
-        className="transaction-popup"
+        className="pinpoint-popup"
         style={{
-          left: `${popup.x}px`,
-          top: `${popup.y}px`,
+          left: `${pinpointPopup.x}px`,
+          top: `${pinpointPopup.y}px`,
           position: 'absolute',
-          color: 'white',
+          backgroundColor: '#fff',
+          color: '#000',
           padding: '12px',
           borderRadius: '6px',
           boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
           fontSize: '14px',
           lineHeight: '1.5',
-          zIndex: 9999,
+          zIndex: 99999,
           maxWidth: '300px',
           minWidth: '180px',
           border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -581,20 +640,20 @@ function Home() {
         }}
       >
         <div>
-          <strong>TimeStamp:</strong> {popup.data.formattedTimestamp}
+          <strong>TimeStamp:</strong> {pinpointPopup.data.formattedTimestamp}
         </div>
         <div>
-          <strong>Seq:</strong> {popup.data.seq}
+          <strong>Seq:</strong> {pinpointPopup.data.seq}
         </div>
         <div>
-          <strong>MintedAmount:</strong> {popup.data.formattedMintAmount}
+          <strong>MintedAmount:</strong> {pinpointPopup.data.formattedMintAmount}
         </div>
         <div>
-          <strong>DonationUSD:</strong> {popup.data.formattedDonationUSD}
+          <strong>DonationUSD:</strong> {pinpointPopup.data.formattedDonationUSD}
         </div>
-        <div> 
-          <a href={popup.data.Link} target="_blank" rel="noopener noreferrer">
-            example.com
+        <div>
+          <a href={pinpointPopup.data.Link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <span style={{ color: '#000' }}>Link: </span>Example.com
           </a>
         </div>
       </div>
@@ -638,8 +697,7 @@ function Home() {
           </div>
         </div>
         <div id="container">
-            {renderPopup()}
-
+            {renderPinpointPopup()}
             <div className="title">
                 <span>KARMA</span>
                 <span>TODAY</span>
