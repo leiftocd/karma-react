@@ -40,7 +40,6 @@ function Mountain() {
         console.error('No paths found in SVG');
         return;
       }
-
       // Create a text element with textPath (transparent)
       let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       textElement.setAttribute('font-size', '22');
