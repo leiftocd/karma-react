@@ -162,6 +162,7 @@ function Home() {
       // Update the position of the pinpoint
       const updatePinpointPosition = (pathBbox) => {
         const containerRect = document.getElementById('container').getBoundingClientRect();
+        const windowWidth = window.innerWidth;
         const point = svg.createSVGPoint();
         point.x = pathBbox.x; // Left edge of the first path
         point.y = pathBbox.y + pathBbox.height / 2; // Vertical center
@@ -175,6 +176,11 @@ function Home() {
 
         let screenX = screenPoint.x - containerRect.left;
         let screenY = screenPoint.y - containerRect.top;
+
+        // Shift pinpoint 5px to the right for screens <= 641px
+        if (windowWidth <= 641) {
+          screenX += 5;
+        }
 
         pinpointDiv.style.left = `${screenX}px`;
         pinpointDiv.style.top = `${screenY}px`;
