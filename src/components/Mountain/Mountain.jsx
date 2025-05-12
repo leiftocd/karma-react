@@ -25,7 +25,6 @@ function Mountain() {
       }
       return true;
     };
-
     // Set up the SVG animation based on the progress data
     const setupSvgAnimation = (data) => {
       const svg = svgRef.current;
@@ -51,7 +50,6 @@ function Mountain() {
       textElement.setAttribute('class', 'hover-text');
       textElement.setAttribute('opacity', '0'); // Make textElement transparent
       textElement.style.cursor = 'pointer';
-
       // Create an HTML overlay box
       let boxDiv = document.createElement('div');
       boxDiv.className = 'text-box';
